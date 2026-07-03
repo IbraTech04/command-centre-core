@@ -57,7 +57,7 @@ public class DiscordGuildFilter extends OncePerRequestFilter {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
                     response.getWriter().write(
-                        "{\"error\":\"Access Denied\",\"message\":\"You must be a member of the required Discord server to access this API\"}"
+                        "{\"error\":\"Access Denied\",\"code\":\"NOT_IN_GUILD\",\"message\":\"You must be a member of the required Discord server to access this API\"}"
                     );
                     return;
                 }

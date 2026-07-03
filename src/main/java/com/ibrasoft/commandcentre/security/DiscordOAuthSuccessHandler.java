@@ -5,6 +5,7 @@ import com.ibrasoft.commandcentre.service.DiscordService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,8 +38,8 @@ public class DiscordOAuthSuccessHandler implements AuthenticationSuccessHandler 
                 boolean allowed = discordService.isUserInRequiredGuild(userId);
                 if (!allowed) {
                     log.warn("OAuth login denied for user {} not in required guild", userId);
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                        "You must be a member of the required Discord server to access this API");
+                    invalidateSession(request);
+                    response.sendRedirect(unauthorizedRedirect("not_in_guild"));
                     return;
                 }
                 String token = jwtService.generateUserToken(userId, List.of(Role.ROLE_USER));
@@ -51,6 +52,22 @@ public class DiscordOAuthSuccessHandler implements AuthenticationSuccessHandler 
             }
         }
 
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
+        invalidateSession(request);
+        response.sendRedirect(unauthorizedRedirect("auth_failed"));
+    }
+
+    private void invalidateSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+    }
+
+    private String unauthorizedRedirect(String reason) {
+        return UriComponentsBuilder.fromUriString(frontendUrl)
+            .path("/unauthorized")
+            .queryParam("reason", reason)
+            .build()
+            .toUriString();
     }
 }

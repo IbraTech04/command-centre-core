@@ -156,19 +156,6 @@
 						</exclude>
 					</excludes>
 				</configuration>
-				<executions>
-					<execution>
-						<id>generate-bot-token</id>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<profiles>
-								<profile>generate-bot-token</profile>
-							</profiles>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

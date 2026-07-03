@@ -38,7 +38,7 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(discordOAuthSuccessHandler)
-                .failureUrl(frontendUrl + "/login?error=true")
+                .failureUrl(frontendUrl + "/unauthorized?reason=auth_failed")
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(discordGuildFilter, UsernamePasswordAuthenticationFilter.class);
