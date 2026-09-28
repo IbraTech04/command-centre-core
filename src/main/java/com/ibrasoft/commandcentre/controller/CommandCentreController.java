@@ -20,7 +20,11 @@ import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 
@@ -316,8 +320,19 @@ public class CommandCentreController {
     public ResponseEntity<List<AuditEvent>> getAuditEventsByDateRange(
             @RequestParam String start,
             @RequestParam String end) {
-        LocalDateTime startDate = LocalDateTime.parse(start);
-        LocalDateTime endDate = LocalDateTime.parse(end);
-        return ResponseEntity.ok(auditEventService.getAuditEventsByDateRange(startDate, endDate));
+        return ResponseEntity.ok(auditEventService.getAuditEventsByDateRange(parseInstant(start), parseInstant(end)));
+    }
+
+    /**
+     * Parse an ISO-8601 bound for the audit date-range query. Values carrying an offset
+     * ("2026-08-27T19:45:16Z", "...-04:00") are honoured as-is; a bare local date-time is read
+     * as UTC, matching how audit timestamps are stored and returned.
+     */
+    private static Instant parseInstant(String value) {
+        try {
+            return OffsetDateTime.parse(value).toInstant();
+        } catch (DateTimeParseException notAnOffset) {
+            return LocalDateTime.parse(value).toInstant(ZoneOffset.UTC);
+        }
     }
 }
