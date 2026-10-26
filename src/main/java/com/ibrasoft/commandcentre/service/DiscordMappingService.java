@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.events.role.update.RoleUpdateNameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -59,6 +60,11 @@ public class DiscordMappingService {
 
     private class CacheListener extends ListenerAdapter {
         @Override
+        public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+            userCache.put(event.getMember().getId(), event.getMember().getEffectiveName());
+        }
+
+        @Override
         public void onGuildMemberUpdateNickname(GuildMemberUpdateNicknameEvent event) {
             userCache.put(event.getMember().getId(),
                     event.getMember().getEffectiveName());
@@ -72,7 +78,20 @@ public class DiscordMappingService {
     }
 
     public String getNickname(String userId) {
-        return userCache.getOrDefault(userId, "Unknown User");
+        String cached = userCache.get(userId);
+        if (cached != null) return cached;
+
+        // The startup snapshot misses anyone who joined later, so fetch on a cache miss.
+        for (Guild guild : jda.getGuilds()) {
+            try {
+                Member member = guild.retrieveMemberById(userId).complete();
+                userCache.put(userId, member.getEffectiveName());
+                return member.getEffectiveName();
+            } catch (RuntimeException ignored) {
+                // Not a member of this guild, or not a valid id.
+            }
+        }
+        return "Unknown User";
     }
 
     public String getRoleName(String roleId) {

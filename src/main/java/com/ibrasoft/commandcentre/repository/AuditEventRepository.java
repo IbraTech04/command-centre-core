@@ -4,7 +4,7 @@ import com.ibrasoft.commandcentre.model.AuditEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -21,5 +21,5 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, Long> {
 
     List<AuditEvent> findByPerformedByOrderByEventTimestampDescIdDesc(String performedBy);
 
-    List<AuditEvent> findByEventTimestampBetweenOrderByEventTimestampDescIdDesc(LocalDateTime start, LocalDateTime end);
+    List<AuditEvent> findByEventTimestampBetweenOrderByEventTimestampDescIdDesc(Instant start, Instant end);
 }

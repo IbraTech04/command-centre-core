@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +40,7 @@ public class AuditEventService {
         return auditEventRepository.findByPerformedByOrderByEventTimestampDescIdDesc(performedBy);
     }
 
-    public List<AuditEvent> getAuditEventsByDateRange(LocalDateTime start, LocalDateTime end) {
+    public List<AuditEvent> getAuditEventsByDateRange(Instant start, Instant end) {
         return auditEventRepository.findByEventTimestampBetweenOrderByEventTimestampDescIdDesc(start, end);
     }
 

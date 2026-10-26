@@ -6,9 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "requests")
@@ -61,11 +63,18 @@ public class Request {
 
     private LocalDate postingDate;
 
+    /**
+     * Absolute instants, stored in {@code timestamp} columns as UTC (see
+     * {@code hibernate.jdbc.time_zone}) and serialized as ISO-8601 with a {@code Z} suffix.
+     * {@link #postingDate} stays a {@link LocalDate} - it is a calendar date, not a moment.
+     */
+    @JdbcTypeCode(SqlTypes.TIMESTAMP)
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
+    @JdbcTypeCode(SqlTypes.TIMESTAMP)
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @Size(max = 255)
     @Column(length = 255, nullable = true)
@@ -77,12 +86,13 @@ public class Request {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = Instant.now();
     }
 }
